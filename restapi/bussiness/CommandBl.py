@@ -116,7 +116,7 @@ class CommandBl(object):
         }
         #获取jmeter启动命令
         runCmd = parseJMeterParam(jmeterDict)
-        runCmd = self.genNoHupCommand(runCmd)
+        runCmd = self.genNoHupCommand(runCmd, item['stdout'])
         try:
             subprocess.call([runCmd], shell=True)
         except Exception as err:

@@ -49,6 +49,6 @@ def parseJMeterParam(m_config):
         if bSetAggregateLogPath:
             sAggregateLogParam = ' -JAGRPT="{0}"'.format(sAggregatePath)
 
-        sCommand = sToolPath + " -n" + sRunTypeParam + " -t " + "\"sCaseScriptPath\"" + sJMeterParam + sToolLogParam + sAggregateLogParam
+        sCommand = sToolPath + " -n" + sRunTypeParam + " -t " + "\""+sCaseScriptPath+"\"" + sJMeterParam + sToolLogParam + sAggregateLogParam
 
         return sCommand
