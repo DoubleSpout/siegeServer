@@ -12,7 +12,7 @@ from hashlib import md5
 
 from restapi import app
 from restapi.models.dbModel import *
-from manager.utils.pyquerystring.querystring import parse
+
 
 #define utils Class
 class Utils(object):
