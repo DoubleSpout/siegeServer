@@ -11,14 +11,10 @@ import urllib
 import json
 from xml.dom.minidom import parse, parseString
 from datetime import datetime
-from qiniu import Auth, put_data, BucketManager, put_file
 
-from urlparse import parse_qsl, parse_qs
-import urllib
-import werkzeug
 
 from restapi import app
-from manager.bussiness.UtilsBl import Utils
+from restapi.bussiness.UtilsBl2 import Utils
 
 #如果不存在上传文件目录，则创建
 uploadPath = app.config.get('UPLOAD_FOLDER')
