@@ -162,6 +162,7 @@ class CommandBl(object):
             return cmd
         else:
             cmd = 'nohup {0} > {0} 2>&1 &'.format(cmd, stdOutPath)
+            print cmd
             return cmd
 
     #生成SessionId用来
