@@ -1,0 +1,140 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+
+<div id="grid"></div>
+
+<script>
+ $(function () {
+
+                var DataHost = window.DataHost,
+                    dataSource = new kendo.data.DataSource({
+                        type: "json",
+                        serverPaging: true,
+                        serverSorting: true,
+                        batch: true,
+                        pageSize: 20,
+                        serverFiltering:true,
+                        transport: {
+                            read:  {
+                                url: DataHost + "/loginlog/read",
+                                type: "post"
+                            },
+                            update: {
+                                url: DataHost + "/loginlog/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            },
+                             destroy: {
+                                url: DataHost + "/loginlog/delete",
+                                type: "post"
+                            },
+                            create: {
+                                url:DataHost + "/loginlog/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            }
+                        },
+                        schema: {
+                            total: "Total",
+                            data: "Data",
+                            parse:function(data){
+                                console.log(data)
+                                return data
+                            },
+                            model: {
+                                id:"Id",
+                                fields: {
+                                    "Id": { editable: false, type:'number' },
+                                    "userId": { editable: true, type:'number'},
+                                    "appId": { editable: true, type:'string'},
+                                    "provider": { editable: true, type:'string'},
+                                    "loginIp":{editable: true, type:'string'},
+                                    "loginToken":{editable: true, type:'string'},
+                                    "loginCode1":{editable: true, type:'string'},
+                                    "loginCode2":{editable: true, type:'string'},
+                                    "WriteTime": {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" }
+                                }
+                            }
+                        }
+                    });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    toolbar: window.toolbarAry,
+                    columns: [
+                        {
+                            field:'Id',
+                            title:'流水id',
+                            hidden:true
+                        },
+                        {
+                            field: "userId",
+                            title: "用户id"
+                        },
+                        {
+                            field: "appId",
+                            title: "设备appid",
+                            hidden:true
+                        },
+                        {
+                            field: "provider",
+                            title: "登录方式"
+                        },
+                         {
+                            field: "loginIp",
+                            title: "登录ip"
+                        },
+                        {
+                            field: "loginToken",
+                            title: "登录token"
+                        },
+                        {
+                            field: "loginCode1",
+                            title: "推广标识1"
+                        },
+                        {
+                            field: "loginCode2",
+                            title: "推广标识2"
+                        },
+                        {
+                            field: "WriteTime",
+                            title: "写入日期",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}"
+                        },
+                        { command: window.commandAry, title: "&nbsp;", width: "160px" }],
+                    editable: {
+                        confirmation:'确定删除吗？',
+                        mode:"popup",
+                        //template: kendo.template($("#popup_editor").html()),
+                        window : {
+                                title: "添加/修改",
+                                width:600
+                            }
+                        },
+                    edit:function(e){
+                            window.fixSelect()
+                    },
+                   filterable:window.filter_obj
+                });
+      });
+
+
+
+</script>
+
+
+
+
+
+
+
+
+{% include 'manager/inc/foot.html' %}

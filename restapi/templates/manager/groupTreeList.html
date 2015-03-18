@@ -1,0 +1,382 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+<div id="typeSelectBox">
+    <h2>请选择素材类型：</h2>
+    <select id="typeSelect">
+        <option value="-1">请选择类别</option>
+        <option value="1">角色素材管理</option>
+        <option value="2">大头贴素材管理</option>
+        <option value="3">动态表情素材管理</option>
+    </select>
+</div>
+
+<div id="jstree_demo_div">
+
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade " id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog" style="width:500px;margin: 30px auto; overflow: hidden;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+        <h4 class="modal-title" id="myModalLabel">上传素材zip包</h4>
+      </div>
+    <form class="bs-example bs-example-form" id="uploadZipForm" method="POST" enctype="multipart/form-data" role="form" action="/grouptree/uploadzip" target="upload_zip">
+
+      <div class="modal-body">
+        <div class="input-group input-group-lg">
+          <h4 style="color:#c00">*角色和大头贴公用的素材zip包，请注意选择</h4>
+          <select class="form-control" id="modalType" name="type">
+              <option value="-1" selected="selected">请选择类型</option>
+              <option value="1">角色素材zip</option>
+              <option value="2">大头贴素材zip</option>
+              <option value="4">角色和大头贴公用zip</option>
+              <option value="3">动态表情素材</option>
+          </select>
+        </div>
+      </div>
+      <div class="modal-body">
+        <div class="input-group input-group-lg">
+          <input type="file" class="form-control" placeholder="请选择zip包" name="uploadZip" id="modalUploadZip" value="" />
+        </div>
+      </div>
+      <div class="modal-footer">
+            <button type="submit" class="btn btn-primary" id="save_change">上传</button>
+            <h4 style="color:#c00">*请注意文件目录和文件名勿使用中文</h4>
+      </div>
+
+
+      <input type="hidden" value="" name="parentGroupId" id="modalParentGroupId" />
+      <input type="hidden" value="" name="parentGroupListIds" id="modalParentGroupListIds" />
+      <input type="hidden" value="" name="gender" id="modalGender" />
+    </form>
+        <iframe src="" id="upload_zip" name="upload_zip" style="display:none"></iframe>
+    </div>
+  </div>
+</div>
+
+
+<script>
+window.uploading = false
+window.uploadZipComplete = function(err){
+    window.uploading = false
+    $('#save_change').html('上传')
+    if(err){
+        return alert(err)
+    }
+    alert('上传zip包成功,即将重新生成树')
+    window.genTree(window.uploadZipType)
+    $('#myModal').modal('hide')
+}
+
+ $(function () {
+
+     $('#uploadZipForm').submit(function(){
+         if($().val() == '-1'){
+             alert('请选择类型')
+             return false;
+         }
+         if(window.uploading) return false
+         window.uploading = true
+         $('#save_change').html('上传中...')
+         return true
+     })
+
+      $("#typeSelect").kendoDropDownList({
+            change: function(){
+                 var value = $("#typeSelect").val();
+                if(value == '-1'){
+                    return false;
+                }
+                genTree(value)
+            }
+        });
+
+     window.genTree = function(typeVal){
+
+            window.loading()
+            $.get('/grouptree/choose',{type:typeVal, r:Math.random()},function(d){
+                if(d.code != 200){
+                    alert(d.result)
+                    window.loading()
+                    return
+                }
+                putTreeData(d.result, typeVal)
+                window.loading()
+            },'json')
+     }
+
+     //右键菜单
+     var customMenu = function(node) {
+            // The default set of all items
+            var items = {
+                editItem: { // The "rename" menu item
+                    label: "管理此节点",
+                    action: function () {
+                        if(node.li_attr.type == 1 || node.li_attr.type == 2){
+                            window.open('/materialgroup/list?groupid='+node.li_attr.groupId)
+                        }
+                        else if(node.li_attr.type == 3){
+                            window.open('/facialgroup/list?groupid='+node.li_attr.groupId)
+                        }
+                        else{
+                            alert('节点类型错误')
+                        }
+                        return false
+                    }
+                },
+                editSourceItem: { // The "rename" menu item
+                    label: "管理此素材",
+                    action: function () {
+                        if(node.li_attr.type == 1 || node.li_attr.type == 2){
+                            window.open('/materialgroup/list?groupid='+node.li_attr.groupId+'&sourceid='+node.li_attr.sourceId)
+                        }
+                        else if(node.li_attr.type == 3){
+                            window.open('/facialgroup/list?groupid='+node.li_attr.groupId+'&sourceid='+node.li_attr.sourceId)
+                        }
+                        else{
+                            alert('节点类型错误')
+                        }
+                        return false
+                    }
+                },
+                cacheItem: { // The "rename" menu item
+                    label: "更新此节点缓存",
+                    action: function () {
+                        var type = node.li_attr.type
+                        var groupId = node.li_attr.groupId
+                        var groupIds = node.li_attr.parentGroupIdList
+                        if(!groupIds || groupIds == '' || groupIds == '0'){
+                            groupIds = groupId
+                        }
+                        else{
+                            groupIds += groupId
+                        }
+                        window.open('/cache/list?type='+type+'&groupId='+groupIds)
+                        return false
+                    }
+                },
+                uploadZip: { // The "rename" menu item
+                    label: "以此节点为父类,上传素材zip包",
+                    action: function () {
+                        window.uploadZipType = node.li_attr.type
+                        var groupId = window.uploadZipGroupId = node.li_attr.groupId
+                        var groupIds = window.uploadZipParentGroupIds =  node.li_attr.parentGroupIdList
+                        window.uploadZipGender = node.li_attr.gender
+
+                        if(!groupIds || groupIds == '' || groupIds == '0'){
+                            window.uploadZipParentGroupIds = groupId+','
+                        }
+                        else{
+                            window.uploadZipParentGroupIds += groupId+','
+                        }
+
+                        $('#myModal').modal({
+                            backdrop:false
+                        })
+                        return false
+                    }
+                }
+            };
+            //console.log(node)
+            if(node.id == 'male' || node.id == 'female' || node.id == 'common' || node.id == 'expressionRoot'){
+                delete items.editItem
+                delete items.cacheItem
+            }
+            if(node.li_attr.isMaterial){
+                delete items.cacheItem
+                delete items.uploadZip
+            }
+            else{
+                delete items.editSourceItem
+            }
+
+            return items;
+        }
+
+     //将数据放入tree中
+     var putTreeData = function(dataList, type){
+         $('#jstree_demo_div').empty().remove()
+         $('#typeSelectBox').after('<div id="jstree_demo_div"></div>')
+
+         var treeList = []
+         if(type == 1 || type == 2)
+         {
+             treeList.push({
+                 id: "male",
+                 text: "男性素材",
+                 state: {
+                     opened: true
+                 },
+                 'li_attr':{
+                        'type':type,
+                        'groupId':0,
+                        'gender':1,
+                        'parentGroupIdList':'',
+                        'isMaterial':false
+                 }
+             })
+             treeList.push({
+                 id: "female",
+                 text: "女性素材",
+                 state: {
+                     opened: true
+                 },
+                 'li_attr':{
+                        'type':type,
+                        'groupId':0,
+                        'gender':0,
+                        'parentGroupIdList':'',
+                        'isMaterial':false
+                 }
+             })
+             treeList.push({
+                 id: "common",
+                 text: "通用素材",
+                 state: {
+                     opened: true
+                 },
+                  'li_attr':{
+                        'type':type,
+                        'groupId':0,
+                        'gender':2,
+                        'parentGroupIdList':'',
+                        'isMaterial':false
+                 }
+             })
+             treeList[0].children = dealListToTreeData(dataList.male, type)
+             treeList[1].children = dealListToTreeData(dataList.female, type)
+             treeList[2].children = dealListToTreeData(dataList.common, type)
+         }
+         else
+         {
+             treeList.push({
+                 id: "expressionRoot",
+                 text: "动态表情",
+                 state: {
+                     opened: true
+                 },
+                 'li_attr':{
+                        'type':type,
+                        'groupId':0,
+                        'gender':2,
+                        'parentGroupIdList':'',
+                        'isMaterial':false
+                 }
+             })
+             treeList[0].children = dealListToTreeData(dataList, type)
+         }
+
+         $('#jstree_demo_div').jstree({
+             'core' : {
+                 'data':treeList
+             },
+             'plugins' : ['contextmenu'],
+             'contextmenu' : {
+                  'items' : customMenu
+             }
+         });
+
+     }
+
+
+     var dealListToTreeData = function(list, type){
+        var resultList = []
+
+        var loopDeal = function(list, lastList) {
+
+            list.forEach(function (item) {
+                var obj = {
+                    'id': item.id,
+                    'text': item.name,
+                    'li_attr':{
+                        'type':type,
+                        'groupId':item.id,
+                        'gender':item.gender,
+                        'parentGroupIdList':item.parent_group_id_list,
+                        'isMaterial':false
+                    },
+                    'state': {
+                        'opened': false
+                    },
+                    'children': []
+                }
+                if (item.materials) {
+                    item.materials.forEach(function (mItem) {
+                        obj.children.push({
+                            'id': 'mItem_' + mItem.id,
+                            'text': mItem.name,
+                            'icon': 'glyphicon glyphicon-file',
+                            'state': {
+                                'opened': false
+                            },
+                            'li_attr':{
+                                'type':type,
+                                'groupId':item.id,
+                                'sourceId':mItem.id,
+                                'isMaterial':true
+                            }
+                        })
+                    })
+                }
+                else if (item.facials) {
+                    item.facials.forEach(function (mItem) {
+                        obj.children.push({
+                            'id': 'mItem_' + mItem.id,
+                            'text': mItem.name,
+                            'icon': 'glyphicon glyphicon-file',
+                            'state': {
+                                'opened': false
+                            },
+                            'li_attr':{
+                                'type':type,
+                                'groupId':item.id,
+                                'sourceId':mItem.id,
+                                'isMaterial':true
+                            }
+                        })
+                    })
+                }
+                if (item.groups && item.groups.length > 0) {
+                    loopDeal(item.groups, obj.children)
+                }
+                lastList.push(obj)
+            })
+
+        }
+
+        loopDeal(list, resultList)
+
+        return resultList
+     }
+
+
+    $('#myModal').on('hidden.bs.modal', function (e) {
+            window.uploading = false
+            $('#save_change').html('上传')
+            $('#modalUploadZip').val('')
+    }).on('show.bs.modal', function (e) {
+            $('#modalType option').each(function(){
+                    var that= $(this)
+                    if(that.val() == window.uploadZipType){
+                        that.attr('selected', 'selected')
+                    }
+            })
+
+            $('#modalParentGroupId').val( window.uploadZipGroupId)
+            $('#modalParentGroupListIds').val(uploadZipParentGroupIds)
+            $('#modalGender').val(window.uploadZipGender)
+    })
+
+ })
+
+</script>
+
+
+
+
+{% include 'manager/inc/foot.html' %}

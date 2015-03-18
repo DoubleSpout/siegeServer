@@ -1,0 +1,191 @@
+{% include 'inc/head.html' %}
+
+
+<div class="container login-container">
+    <h4>第三方平台：{{ platStr }}</h4>
+    <h4>昵称：{{ userInfo['nickName'] }}</h4>
+    <h4><img src="{{ userInfo['avatar'] }}" /></h4>
+    <h4>性别：{{ userInfo['gender'] }}</h4>
+</div>
+
+
+<div class="container login-container">
+    <h4>没有帐号，新注册绑定</h4>
+
+      <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">手机</label>
+        <div class="col-sm-10">
+          <input id="reg_cellphone" type="text" class="form-control"  placeholder="手机" maxlength="50">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">用户名</label>
+        <div class="col-sm-10">
+          <input id="reg_username" type="text" class="form-control"  placeholder="用户名" maxlength="50">
+        </div>
+      </div>
+
+    <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">密码</label>
+        <div class="col-sm-10">
+          <input id="reg_password" type="password" class="form-control"  placeholder="密码" maxlength="50">
+        </div>
+      </div>
+
+
+    <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">重复密码</label>
+        <div class="col-sm-10">
+          <input id="reg_repassword" type="password" class="form-control"  placeholder="重复密码" maxlength="50">
+        </div>
+      </div>
+
+    <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">昵称</label>
+        <div class="col-sm-10">
+          <input id="reg_nickname" type="text" class="form-control"  placeholder="昵称" value="表情me会员" maxlength="50">
+        </div>
+      </div>
+
+    <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">性别</label>
+        <div class="col-sm-10">
+          <input id="reg_gender" type="text" class="form-control"  placeholder="性别" value="1" maxlength="50">
+        </div>
+      </div>
+
+
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button id="reg-submit" type="button" class="btn btn-warning">立即注册</button>
+          <a href="/page/{{ app_ename }}/login?back_url={{ back_url }}">马上登录</a>
+        </div>
+      </div>
+</div>
+
+
+<div class="container login-container">
+    <h4>已经有表情me帐号，登录并且绑定</h4>
+
+      <div class="form-group">
+        <label for="inputEmail3" class="col-sm-2 control-label">手机或用户名</label>
+        <div class="col-sm-10">
+          <input id="login_loginName" type="text" class="form-control"  placeholder="手机或用户名" maxlength="50">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="inputPassword3" class="col-sm-2 control-label">密码</label>
+        <div class="col-sm-10">
+          <input id="login_password" type="password" class="form-control"  placeholder="密码" maxlength="50">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button id="login-submit" type="button" class="btn btn-warning">立即登录</button>
+          <a href="/page/{{ app_ename }}/reg?back_url={{ back_url }}">立即注册</a>
+        </div>
+      </div>
+
+</div>
+
+<script type="text/javascript">
+
+    var back_url = '{{ back_url }}'
+    $(function(){
+        $('#reg-submit').click(function(){
+            var phoneVal = $.trim($('#reg_cellphone').val())
+            var userVal = $.trim($('#reg_username').val())
+            var pwdVal = $.trim($('#reg_password').val())
+            var nickVal = $.trim($('#reg_nickname').val())
+            var genderVal = $.trim($('#reg_gender').val())
+            var attributesVal = $.trim($('#reg_attributes').val())
+            if(!phoneVal){
+                alert('请填写手机号')
+                return false
+            }
+            if(!userVal){
+                alert('请填写用户名')
+                return false
+            }
+            if(!pwdVal){
+                alert('请填写密码')
+                return false
+            }
+            var qobj ={
+                'cellphone':phoneVal,
+                'username':userVal,
+                'password':pwdVal,
+                'nickname':nickVal,
+                'gender':genderVal,
+                'from1': $.cookie('from1'),
+                'from2': $.cookie('from2'),
+                'nickname':'{{ userInfo['nickName'] }}',
+                'avatar':'{{ userInfo['avatar'] }}',
+                '_csrf':'{{ _csrf }}'
+            }
+
+
+            $.post('/page/{{ app_ename }}/api/regBind/{{ platname }}', qobj, function(d){
+                    if(d.code != 200){
+                        return alert(d.result)
+                    }
+                    location.href = addParam(back_url, 'logintoken', d.result.logintoken)
+            }, 'json')
+
+            return false
+        })
+
+    })
+
+
+
+
+    var back_url = '{{ back_url }}'
+
+    $(function(){
+        $('#login-submit').click(function(){
+            var loginVal = $.trim($('#login_loginName').val())
+            var pwdVal = $.trim($('#login_password').val())
+            if(!loginVal){
+                alert('请填写用户名')
+                return false
+            }
+            if(!pwdVal){
+                alert('请填写密码')
+                return false
+            }
+            var firseChar = loginVal[0]
+            var qobj ={
+                'password':pwdVal,
+                '_csrf':'{{ _csrf }}',
+                'nickname':'{{ userInfo['nickName'] }}',
+                'avatar':'{{ userInfo['avatar'] }}',
+                'from1': $.cookie('from1'),
+                'from2': $.cookie('from2')
+            }
+            if(parseInt(firseChar) == firseChar){
+                qobj['cellphone'] = loginVal
+            }
+            else{
+                qobj['username'] = loginVal
+            }
+
+            $.post('/page/{{ app_ename }}/api/loginBind/{{ platname }}', qobj, function(d){
+                    if(d.code != 200){
+                        return alert(d.result)
+                    }
+                    location.href = addParam(back_url, 'logintoken', d.result.logintoken)
+            }, 'json')
+
+            return false
+        })
+
+    })
+
+</script>
+
+{% include 'inc/foot.html' %}

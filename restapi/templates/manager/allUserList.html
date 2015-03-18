@@ -1,0 +1,286 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+
+<div id="grid"></div>
+
+<script>
+
+function reset_password(e) {
+        if(confirm('确定要重置密码吗？')){
+                e.preventDefault();
+                var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                var allUserId = dataItem.Id
+
+                $.post(window.DataHost+'/alluser/resetpwd/'+allUserId,{},function(d){
+                    if(d.code == 200){
+                        alert('重置成功，默认密码为：'+ d.result)
+                        $("#grid").data("kendoGrid").dataSource.read();
+                    }
+                    else{
+                        alert(d.result)
+                    }
+                })
+        }
+    }
+
+
+ $(function () {
+                window.allAppJson = {{ allAppJson|safe }}
+
+                window.commandAry = [
+                    { name: "edit", text: {edit: "编辑", update: "确定",  cancel: "取消"} },
+                    { name: "resetPwd", text: "重置", click:reset_password}
+                        ]
+
+
+
+                var DataHost = window.DataHost,
+                    dataSource = new kendo.data.DataSource({
+                        type: "json",
+                        serverPaging: true,
+                        serverSorting: true,
+                        batch: true,
+                        pageSize: 20,
+                        serverFiltering:true,
+                        transport: {
+                            read:  {
+                                url: DataHost + "/alluser/read",
+                                type: "post"
+                            },
+                            update: {
+                                url: DataHost + "/alluser/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            },
+                             destroy: {
+                                url: DataHost + "/alluser/delete",
+                                type: "post"
+                            },
+                            create: {
+                                url:DataHost + "/alluser/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            }
+                        },
+                        schema: {
+                            total: "Total",
+                            data: "Data",
+                            parse:function(data){
+                                console.log(data)
+                                return data
+                            },
+                            model: {
+                                id:"Id",
+                                fields: {
+                                    Id : { editable: false, type:'number' },
+                                    cellphone : { editable: true, type:'string' },
+                                    isValidPhone:{ editable: true, type:'string' },
+                                    userName : { editable: true, type:'string' },
+                                    nickName : { editable: true, type:'string' },
+                                    gender : { editable: true, type:'number' },
+                                    password : { editable: false, type:'string' },
+                                    pwdSalt : { editable: false, type:'string' },
+                                    email : { editable: true, type:'string' },
+                                    regAgent : { editable: true, type:'string' },
+                                    regIp : { editable: true, type:'string' },
+                                    regApiAppId : { editable: true, type:'number' },
+                                    regAppId : { editable: true, type:'string' },
+                                    regFromCode1 : { editable: true, type:'string' },
+                                    regFromCode2 : { editable: true, type:'string' },
+                                    //code1 : { editable: true, type:'string' },
+                                    //code2 : { editable: true, type:'string' },
+                                    lastLoginTime : { editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" },
+                                    lastLoginIp : { editable: true, type:'string' },
+                                    lastPwdChangeTime : {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" },
+                                    isEnable : { editable: true, type:'string' },
+                                    pwdQuestion1 : { editable: true, type:'string' },
+                                    pwdAnswer1 : { editable: true, type:'string' },
+                                    pwdQuestion2 : { editable: true, type:'string' },
+                                    pwdAnswer2 : { editable: true, type:'string' },
+                                    UpdateTime: {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" },
+                                    WriteTime: {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" }
+                                }
+                            }
+                        }
+                    });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    toolbar: window.toolbarAry,
+                    columns: [
+                        {
+                            field:'Id',
+                            title:'用户id'
+                        },
+                        {
+                            field: "cellphone",
+                            title: "手机号"
+                        },
+                        {
+                            field: "isValidPhone",
+                            title: "是否验证手机",
+                            values:window.is_on_off,
+                            hidden:true
+                        },
+                        {
+                            field: "userName",
+                            title: "用户名"
+                        },
+                        {
+
+                            field: "nickName",
+                            title: "昵称"
+                        },
+                        {
+                            field: "gender",
+                            title: "性别",
+                            values:window.gender
+                        },
+                        {
+                            field: "password",
+                            title: "密码",
+                            hidden:true
+                        },
+                        {
+                            field: "pwdSalt",
+                            title: "密码串",
+                            hidden:true
+                        },
+                        {
+                            field: "email",
+                            title: "电邮",
+                            hidden:true
+                        },
+                        {
+                            field: "regAgent",
+                            title: "注册设备",
+                            hidden:true
+                        },
+                        {
+                            field: "regIp",
+                            title: "注册IP",
+                            hidden:true
+                        },
+                        {
+                            field: "regApiAppId",
+                            title: "接入应用Id",
+                            values:window.allAppJson
+
+                        },
+                        {
+                            field: "regAppId",
+                            title: "注册设备appid",
+                            hidden:true
+
+                        },
+                        {
+                            field: "regFromCode1",
+                            title: "注册推广1",
+                            hidden:true
+                        },
+                        {
+                            field: "regFromCode2",
+                            title: "注册推广2",
+                            hidden:true
+                        },
+                        {
+                            field: "lastLoginTime",
+                            title: "上次登录时间",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}",
+                            hidden:true
+                        },
+                        {
+                            field: "lastLoginIp",
+                            title: "上次登录Ip",
+                            hidden:true
+                        },
+                        {
+                            field: "lastPwdChangeTime",
+                            title: "上次修改密码时间",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}",
+                            hidden:true
+                        },
+                        {
+                            field: "isEnable",
+                            title: "是否为启用",
+                            values:window.is_on_off,
+                            hidden:true
+                        },
+                        {
+                            field: "pwdQuestion1",
+                            title: "密码问题1",
+                            hidden:true
+                        },
+                        {
+                            field: "pwdAnswer1",
+                            title: "密码答案1",
+                            hidden:true
+                        },
+                        {
+                            field: "pwdQuestion2",
+                            title: "密码问题2",
+                            hidden:true
+                        },
+                        {
+                            field: "pwdAnswer2",
+                            title: "密码答案2",
+                            hidden:true
+                        },
+                        {
+                            field: "UpdateTime",
+                            title: "更新时间",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}",
+                            hidden:true
+                        },
+                        {
+                            field: "WriteTime",
+                            title: "注册时间",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}"
+                        },
+                        /*{
+                            field:'code1',
+                            title:'备用',
+                            hidden:true
+                        },
+                        {
+                            field:'code2',
+                            title:'备用',
+                            hidden:true
+                        },*/
+                        { command: window.commandAry, title: "&nbsp;", width: "160px" }],
+                    editable: {
+                        confirmation:'确定删除吗？',
+                        mode:"popup",
+                        //template: kendo.template($("#popup_editor").html()),
+                        window : {
+                                title: "添加/修改",
+                                width:600
+                            }
+                        },
+                    edit:function(e){
+                            window.fixSelect()
+                    },
+                   filterable:window.filter_obj
+                });
+      });
+
+
+
+</script>
+
+
+
+
+
+
+
+
+{% include 'manager/inc/foot.html' %}

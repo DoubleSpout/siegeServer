@@ -1,0 +1,218 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+
+<div id="grid"></div>
+
+<script>
+ $(function () {
+
+                window.allLocaleJson = {{ allLocaleJson|safe }}
+                window.allLocaleENameJson = {{ allLocaleENameJson|safe }}
+
+                var DataHost = window.DataHost,
+                    dataSource = new kendo.data.DataSource({
+                        type: "json",
+                        serverPaging: true,
+                        serverSorting: true,
+                        batch: true,
+                        pageSize: 20,
+                        serverFiltering:true,
+                        transport: {
+                            read:  {
+                                url: DataHost + "/facialgroup/read",
+                                type: "post"
+                            },
+                            update: {
+                                url: DataHost + "/facialgroup/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            },
+                             destroy: {
+                                url: DataHost + "/facialgroup/delete",
+                                type: "post"
+                            },
+                            create: {
+                                url:DataHost + "/facialgroup/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            }
+                        },
+                        schema: {
+                            total: "Total",
+                            data: "Data",
+                            parse:function(data){
+                                console.log(data)
+                                return data
+                            },
+                            model: {
+                                id:"Id",
+                                fields: {
+                                    "Id": { editable: false, type:'number' },
+                                    "name": { editable: false, type:'string'},
+                                    "ename": { editable: false, type:'string'},
+                                    "gender":{editable: false, type:'number'},
+                                    "localeEName": { editable: false, type:'string'},
+                                    "isEnable": { editable: true, false:'string'}
+                                }
+                            }
+                        }
+                    });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    toolbar: [],
+                    detailInit: detailInit,
+                    columns: [
+                        {
+                            field:'Id',
+                            title:'捏脸素材分组id'
+                        },
+                        {
+                            field: "name",
+                            title: "名称"
+                        },
+                        {
+                            field: "ename",
+                            title: "短名称"
+                        },
+                        {
+                            field: "gender",
+                            title: "性别",
+                            values:window.gender_material
+                        },
+                        {
+                            field: "localeEName",
+                            title: "所属国家",
+                            values:window.allLocaleENameJson
+                        },
+                        {
+                            field: "isEnable",
+                            title: "是否启用",
+                            values:window.is_on_off
+                        }
+                        ],
+                   filterable:window.filter_obj
+                });
+      });
+
+
+function detailInit(e) {
+
+    var cellobj = $("<div/>").appendTo(e.detailCell)
+    var parentId = e.data.Id
+    var dataSource2 = new kendo.data.DataSource({
+        type: "json",
+        serverPaging: true,
+        serverSorting: true,
+        batch: true,
+        pageSize: 5,
+        serverFiltering:true,
+        filter: { field: "facialGroupId", operator: "eq", value:parentId  },
+        transport: {
+                read:  {
+                    url: DataHost + "/facialgrouplocaledetail/read",
+                    type: "post"
+                },
+                update: {
+                    url: DataHost + "/facialgrouplocaledetail/save",
+                    type: "post",
+                    complete: function(e) {
+                        cellobj.data("kendoGrid").dataSource.read();
+                    }
+                },
+                destroy: {
+                    url: DataHost + "/facialgrouplocaledetail/delete",
+                    type: "post"
+                },
+                create: {
+                    url: DataHost + "/facialgrouplocaledetail/save",
+                     type: "post",
+                     complete: function(e) {
+                        cellobj.data("kendoGrid").dataSource.read();
+                     }
+                }
+        },
+        schema: {
+                total: "Total",
+                data: "Data",
+                model: {
+                    id:"Id",
+                        fields: {
+                        "Id": { editable: false, type:'number' },
+                        "localeId": { editable: true, type:'number' },
+                        "facialGroupId": { editable: true, type:'number' },
+                        "localeName": { editable: true, type:'string'},
+                        "localeIntro": { editable: true, type:'string'}
+                    }
+                }
+        }
+    });
+
+    cellobj.kendoGrid({
+        dataSource:dataSource2,
+        scrollable: false,
+        sortable: true,
+        pageable: true,
+        toolbar:window.toolbarAry,
+        columns: [
+                    {
+                        field:'Id',
+                        title:'关联Id'
+                    },
+                    {
+                        field:'localeId',
+                        title:'所属国家',
+                        values:allLocaleJson
+                    },
+                    {
+                        field: "facialGroupId",
+                        title: "动态表情素材分组id"
+                    },
+                    {
+                        field: "localeName",
+                        title: "分组本地名称"
+                    },
+                    {
+                        field: "localeIntro",
+                        title: "分组本地简介"
+                    },
+                    { command: commandAry, title: "&nbsp;", width: "160px" }
+           ],
+            filterable:false,
+            editable: {
+                    confirmation:'确定删除吗？',
+                    mode:"popup",
+                    window : {
+                            title: "添加/修改",
+                            width:600
+                        }
+                    },
+                edit:function(e){
+                        setTimeout(function(){
+                            $('input[name="facialGroupId"]').val(parentId).focus().change().blur()
+                        },100)
+                        window.fixSelect()
+                },
+                filterable:window.filter_obj
+    });
+}
+
+
+</script>
+
+
+
+
+
+
+
+
+{% include 'manager/inc/foot.html' %}

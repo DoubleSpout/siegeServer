@@ -1,0 +1,92 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script src="http://libs.baidu.com/jquery/1.9.0/jquery.js"></script>
+<title>jmetertest</title>
+
+</head>
+
+<body>
+<form METHOD="post" action="/upload/save" enctype="multipart/form-data" target="upload">
+    <input type="file" name="upload_file">
+    <input type="submit" value="上传文件">
+</form>
+<iframe id="upload" name="upload"></iframe>
+
+<div>
+    <div  id="jmeter">
+            sJMeterConsole:<input id="sJMeterConsole" type="text" value="10.1.25.12"><br/>
+            lstJMeterServer:<input id="lstJMeterServer" type="text" value='["10.1.25.12"]'><br/>
+            nTotalTestDuration:<input id="nTotalTestDuration" type="text" value="1"><br/>
+            nCaseTimeOut:<input id="nCaseTimeOut" type="text" value="600"><br/>
+            sCaseScriptPath:<input id="sCaseScriptPath" type="text" value="2132/111.txt"><br/>
+            nCaseRunType:<input id="nCaseRunType" type="text" value="601"><br/>
+            nWaitTimeBeforeReport:<input id="nWaitTimeBeforeReport" type="text" value="5"><br/>
+            nThreadNum:<input id="nThreadNum" type="text" value="20"><br/>
+            nRampUpTime:<input id="nRampUpTime" type="text" value="30"><br/>
+    </div>
+    <br/><br/><br/>
+    HOST:<input id="host" type="text" value="127.0.0.1" />
+    type:<input id="type" type="text" value="jmeter" />
+    cmd:<input id="cmd" type="text" value="" />
+
+    <button id="send">发送</button>
+</div><br/><br/>
+<a id="jtl_link" href="" target="_blank">jtl报告地址</a>
+<a id="csv_link" href="" target="_blank">csv报告地址</a>
+<br/><br/>
+<div id="session_box">
+
+</div>
+
+<button id="get">获取</button>
+
+
+
+<script type="application/javascript">
+    $(function(){
+        window.sid = false
+
+        $('#get').click(function(){
+            if(!window.sid) return false;
+            $.get('/v1/command/', {'sid': window.sid}, function(data){
+                $('#session_box').html(JSON.stringify(data))
+            }, 'json')
+        })
+
+        $('#send').click(function(){
+
+            var dict = {
+                'host':$('#host').val(),
+                'type':$('#type').val(),
+                'cmd':$('#cmd').val(),
+                'param':{}
+            }
+
+            $('#jmeter input').each(function(){
+                var key = $(this).attr('id')
+                dict['param'][key] = $(this).val()
+            })
+
+            var dictStr = JSON.stringify([dict])
+            $.post('/v1/command/', {'cmd_json':dictStr}, function(d){
+                if(d.code == 200){
+                    window.sid = d.result
+                    var jtlStr = '/static/jmeter/'+window.sid+'_0.jtl'
+                    var csvStr = '/static/jmeter/'+window.sid+'_0.csv'
+                    $('#jtl_link').attr('href',jtlStr)
+                    $('#csv_link').attr('href',csvStr)
+                    return alert('执行成功')
+                }
+                else return alert(d.result)
+            }, 'json')
+
+         })
+
+
+
+    })
+</script>
+</body>
+</html>

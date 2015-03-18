@@ -1,0 +1,126 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+
+<div id="grid"></div>
+
+<script>
+ $(function () {
+
+                var DataHost = window.DataHost,
+                    dataSource = new kendo.data.DataSource({
+                        type: "json",
+                        serverPaging: true,
+                        serverSorting: true,
+                        batch: true,
+                        pageSize: 20,
+                        serverFiltering:true,
+                        transport: {
+                            read:  {
+                                url: DataHost + "/smslog/read",
+                                type: "post"
+                            },
+                            update: {
+                                url: DataHost + "/smslog/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            },
+                             destroy: {
+                                url: DataHost + "/smslog/delete",
+                                type: "post"
+                            },
+                            create: {
+                                url:DataHost + "/smslog/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            }
+                        },
+                        schema: {
+                            total: "Total",
+                            data: "Data",
+                            parse:function(data){
+                                console.log(data)
+                                return data
+                            },
+                            model: {
+                                id:"Id",
+                                fields: {
+                                    "Id": { editable: false, type:'number' },
+                                    "validCode": { editable: true, type:'string'},
+                                    "cellphone": { editable: true, type:'string'},
+                                    "WriteTime": {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" }
+                                    /*"code1":{editable: true, type:'string'},
+                                    "code2":{editable: true, type:'string'},
+                                    */
+                                }
+                            }
+                        }
+                    });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    toolbar: window.toolbarAry,
+                    columns: [
+                        {
+                            field:'Id',
+                            title:'流水id'
+                        },
+                        {
+                            field: "validCode",
+                            title: "短信验证码"
+                        },
+                        {
+                            field: "cellphone",
+                            title: "手机号"
+                        },
+                        {
+                            field: "WriteTime",
+                            title: "写入日期",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}"
+                        },
+                        /*{
+                            field:'code1',
+                            title:'备用',
+                            hidden:true
+                        },
+                        {
+                            field:'code2',
+                            title:'备用',
+                            hidden:true
+                        },*/
+                        { command: window.commandAry, title: "&nbsp;", width: "160px" }],
+                    editable: {
+                        confirmation:'确定删除吗？',
+                        mode:"popup",
+                        //template: kendo.template($("#popup_editor").html()),
+                        window : {
+                                title: "添加/修改",
+                                width:600
+                            }
+                        },
+                    edit:function(e){
+                            window.fixSelect()
+                    },
+                   filterable:window.filter_obj
+                });
+      });
+
+
+
+</script>
+
+
+
+
+
+
+
+
+{% include 'manager/inc/foot.html' %}

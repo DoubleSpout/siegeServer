@@ -1,0 +1,181 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+
+<div id="grid"></div>
+
+<script>
+
+
+ $(function () {
+                window.allAppJson = {{ allAppJson|safe }}
+
+                var DataHost = window.DataHost,
+                    dataSource = new kendo.data.DataSource({
+                        type: "json",
+                        serverPaging: true,
+                        serverSorting: true,
+                        batch: true,
+                        pageSize: 20,
+                        serverFiltering:true,
+                        transport: {
+                            read:  {
+                                url: DataHost + "/newyear2015/read",
+                                type: "post"
+                            },
+                            update: {
+                                url: DataHost + "/newyear2015/save",
+                                type: "post",
+                                complete: function(e) {
+                                    $("#grid").data("kendoGrid").dataSource.read();
+                                }
+                            },
+                             destroy: {
+                                url: DataHost + "/newyear2015/delete",
+                                type: "post"
+                            },
+                            create: {
+                                url:DataHost + "/newyear2015/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            }
+                        },
+                        schema: {
+                            total: "Total",
+                            data: "Data",
+                            parse:function(data){
+                                console.log(data)
+                                return data
+                            },
+                            model: {
+                                id:"Id",
+                                fields: {
+                                    "Id": { editable: false, type:'number' },
+
+                                    "userAvatarUrl": { editable: true, type:'string'},
+                                    "maskImgId": { editable: true, type:'number'},
+                                    "maskXPos": { editable: true, type:'number'},
+                                    "maskYPos":{editable: true, type:'number'},
+
+                                    "userFaceAvatarUrl":{editable: true, type:'string'},
+                                    "luckyWordId":{editable: true, type:'number'},
+                                    "luckyGifUrl":{editable: true, type:'string'},
+
+                                    "ip":{editable: true, type:'string'},
+                                    "logIntro":{editable: true, type:'string'},
+                                    "agent":{editable: true, type:'string'},
+
+                                    "code1":{editable: true, type:'string'},
+                                    "code2":{editable: true, type:'string'},
+
+                                    "WriteTime": {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" }
+                                }
+                            }
+                        }
+                    });
+
+
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    toolbar: window.toolbarAry,
+                    columns: [
+                        {
+                            field:'Id',
+                            title:'流水id',
+                            hidden:true
+                        },
+                        {
+                            field: "userAvatarUrl",
+                            title: "用户头像url",
+                            template:"<img src='#=userAvatarUrl#' width=50 height=50/>"
+                        },
+                        {
+                            field: "maskImgId",
+                            title: "遮挡Id"
+                        },
+                        {
+                            field: "maskXPos",
+                            title: "遮挡X轴",
+                            hidden:true
+                        },
+                         {
+                            field: "maskYPos",
+                            title: "遮挡Y轴",
+                            hidden:true
+                        },
+                        {
+                            field: "luckyWordId",
+                            title: "吉祥话Id"
+                        },
+                        {
+                            field: "userFaceAvatarUrl",
+                            title: "切出脸url",
+                            template:"<img src='#=userFaceAvatarUrl#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "luckyGifUrl",
+                            title: "gif图片",
+                            template:"<img src='#=luckyGifUrl#' width=50 height=50/>"
+                        },
+                        {
+                            field: "ip",
+                            title: "ip地址"
+                        },
+                        {
+                            field: "logIntro",
+                            title: "日志备注",
+                            hidden:true
+                        },
+                        {
+                            field: "agent",
+                            title: "设备",
+                            hidden:true
+                        },
+                        /*
+                        {
+                            field: "code1",
+                            title: "备用1",
+                            hidden:true
+                        },
+                        {
+                            field: "code2",
+                            title: "备用2"
+                        },
+                        */
+                        {
+                            field: "WriteTime",
+                            title: "写入日期",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}"
+                        },
+                        { command: window.commandAry, title: "&nbsp;", width: "160px" }],
+                    editable: {
+                        confirmation:'确定删除吗？',
+                        mode:"popup",
+                        //template: kendo.template($("#popup_editor").html()),
+                        window : {
+                                title: "添加/修改",
+                                width:600
+                            }
+                        },
+                    edit:function(e){
+                            window.fixSelect()
+                    },
+                   filterable:window.filter_obj
+                });
+      });
+
+</script>
+
+
+
+
+
+
+
+
+{% include 'manager/inc/foot.html' %}

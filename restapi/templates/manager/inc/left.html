@@ -1,0 +1,28 @@
+<div class="container-fluid">
+<div class="row">
+<!--以上是全局使用标签    -->
+
+<div class="col-sm-3 col-md-2 sidebar" id="leftBar">
+{% for groupName in g.auth %}
+<ul class="nav nav-sidebar">
+      {% set exists = [] %}
+      {% for authName in g.auth[groupName] %}
+            {% if g.auth[groupName][authName]['isMenu']%}
+                {% set _ = exists.append(1) %}
+            {% endif %}
+      {% endfor %}
+      {% if exists %}
+            <li class="nav-header">{{ groupName }}</li>
+      {% endif %}
+
+      {% for authName in g.auth[groupName] %}
+          {% if g.auth[groupName][authName]['isMenu'] %}
+            <li><a href="{{ g.auth[groupName][authName]['authUrl'] }}">{{ authName }}</a></li>
+          {% endif %}
+      {% endfor %}
+</ul>
+{% endfor %}
+</div>
+
+<!--以下是主体使用标签-->
+<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">

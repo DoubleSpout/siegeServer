@@ -1,0 +1,430 @@
+{% include 'manager/inc/head.html' %}
+{% include 'manager/inc/top.html' %}
+{% include 'manager/inc/left.html' %}
+
+
+<div id="grid"></div>
+
+<script>
+
+ function syncAll(){
+        alert('学习素材可能时间稍慢，请耐心等待。')
+        window.loading()
+        $.post('/facestar/syncall',{r:Math.random()}, function(d){
+                window.loading()
+                if(d.code == 200){
+                    return alert('同步成功')
+                }
+                else{
+                    return alert(d.result)
+                }
+        },'json').error(function(){
+            window.loading()
+            alert('同步出错')
+        })
+     }
+
+     function syncOne(e){
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var sourceId = dataItem.Id
+        alert('学习素材可能时间稍慢，请耐心等待。')
+        window.loading()
+        $.post('/facestar/sync',{r:Math.random(), sourceid:sourceId}, function(d){
+                window.loading()
+                if(d.code == 200){
+                    return alert('同步成功')
+                }
+                else{
+                    return alert(d.result)
+                }
+        },'json').error(function(){
+            window.loading()
+            alert('同步出错')
+        })
+     }
+
+
+ $(function () {
+
+
+
+                var DataHost = window.DataHost,
+                    dataSource = new kendo.data.DataSource({
+                        type: "json",
+                        serverPaging: true,
+                        serverSorting: true,
+                        batch: true,
+                        pageSize: 20,
+                        serverFiltering:true,
+                        transport: {
+                            read:  {
+                                url: DataHost + "/facestar/read",
+                                type: "post"
+                            },
+                            update: {
+                                url: DataHost + "/facestar/save",
+                                type: "post",
+                                complete: function(e) {
+                                    $("#grid").data("kendoGrid").dataSource.read();
+                                }
+                            },
+                             destroy: {
+                                url: DataHost + "/facestar/delete",
+                                type: "post"
+                            },
+                            create: {
+                                url:DataHost + "/facestar/save",
+                                type: "post",
+                                complete: function(e) {
+                                            $("#grid").data("kendoGrid").dataSource.read();
+                                    }
+                            }
+                        },
+                        schema: {
+                            total: "Total",
+                            data: "Data",
+                            parse:function(data){
+                                console.log(data)
+                                return data
+                            },
+                            model: {
+                                id:"Id",
+                                fields: {
+                                    "Id": { editable: false, type:'number' },
+                                    "starEname": { editable: true, type:'string'},
+                                    "starTrueName": { editable: true, type:'string'},
+                                    "starGender": { editable: true, type:'number'},
+                                    "starIntro":{editable: true, type:'string'},
+
+                                    "starPic1":{editable: true, type:'string'},
+                                    "starPic2":{editable: true, type:'string'},
+                                    "starPic3":{editable: true, type:'string'},
+                                    "starPic4":{editable: true, type:'string'},
+                                    "starPic5":{editable: true, type:'string'},
+                                    "starPic6":{editable: true, type:'string'},
+                                    "starPic7":{editable: true, type:'string'},
+                                    "starPic8":{editable: true, type:'string'},
+                                    "starPic9":{editable: true, type:'string'},
+                                    "starPic10":{editable: true, type:'string'},
+
+                                    "meAvatar":{editable: true, type:'string'},
+                                    "starFaceAvatar":{editable: true, type:'string'},
+
+                                    "starPicAvatar1":{editable: true, type:'string'},
+                                    "starPicAvatar2":{editable: true, type:'string'},
+                                    "starPicAvatar3":{editable: true, type:'string'},
+                                    "starPicAvatar4":{editable: true, type:'string'},
+                                    "starPicAvatar5":{editable: true, type:'string'},
+
+                                    "starPicAvatar6":{editable: true, type:'string'},
+                                    "starPicAvatar7":{editable: true, type:'string'},
+                                    "starPicAvatar8":{editable: true, type:'string'},
+                                    "starPicAvatar9":{editable: true, type:'string'},
+                                    "starPicAvatar10":{editable: true, type:'string'},
+
+                                    "faceId":{editable: true, type:'string'},
+
+                                    "isDefaultStar":{editable:true, type:'string'},
+                                    "isShow":{editable:true, type:'string'},
+                                    "starRoleId":{editable:true, type:'number'},
+                                    //"code1":{editable: true, type:'string'},
+                                    //"code2":{editable: true, type:'string'},
+                                    //"code3":{editable: true, type:'string'},
+                                    //"code4":{editable: true, type:'string'},
+                                    //"code5":{editable: true, type:'string'},
+
+                                    "UpdateTime": {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" },
+                                    "WriteTime": {editable: true, type: "date", template: "#= kendo.toString(dateCreated,'yyyy/MM/dd/ HH:mm:ss') #" }
+                                }
+                            }
+                        }
+                    });
+
+                window.toolbarAry.push(
+                    { name: "syncall", text: "同步所有素材", click:syncAll }
+                )
+                window.commandAry.push(
+                    { name: "syncone", text: "同步素材", click:syncOne }
+                )
+                $("#grid").kendoGrid({
+                    dataSource: dataSource,
+                    pageable: true,
+                    toolbar: window.toolbarAry,
+                    columns: [
+                        {
+                            field:'Id',
+                            title:'明星脸Id',
+                            hidden:true
+                        },
+                        {
+                            field: "starEname",
+                            title: "英文名",
+                            hidden:true
+                        },
+                        {
+                            field: "starTrueName",
+                            title: "明星姓名"
+                        },
+                        {
+                            field: "starGender",
+                            title: "性别",
+                            values:window.gender_material
+                        },
+                         {
+                            field: "starIntro",
+                            title: "简介",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic1",
+                            title: "明星素材1",
+                            template:"<img src='#=starPic1#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic2",
+                            title: "明星素材2",
+                            template:"<img src='#=starPic2#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic3",
+                            title: "明星素材3",
+                            template:"<img src='#=starPic3#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic4",
+                            title: "明星素材4",
+                            template:"<img src='#=starPic4#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic5",
+                            title: "明星素材5",
+                            template:"<img src='#=starPic5#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic6",
+                            title: "明星素材6",
+                            template:"<img src='#=starPic6#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic7",
+                            title: "明星素材7",
+                            template:"<img src='#=starPic7#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic8",
+                            title: "明星素材8",
+                            template:"<img src='#=starPic8#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic9",
+                            title: "明星素材9",
+                            template:"<img src='#=starPic9#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPic10",
+                            title: "明星素材10",
+                            template:"<img src='#=starPic10#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "meAvatar",
+                            title: "明星卡通形象",
+                            template:"<img src='#=meAvatar#' width=50 height=50/>"
+                        },
+                        {
+                            field: "starFaceAvatar",
+                            title: "明星卡通脸（霍比特用）",
+                            template:"<img src='#=starFaceAvatar#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar1",
+                            title: "明星照片1",
+                            template:"<img src='#=starPicAvatar1#' width=50 height=50/>"
+
+                        },
+                        {
+                            field: "starPicAvatar2",
+                            title: "明星照片2",
+                            template:"<img src='#=starPicAvatar2#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar3",
+                            title: "明星照片3",
+                            template:"<img src='#=starPicAvatar3#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar4",
+                            title: "明星照片4",
+                            template:"<img src='#=starPicAvatar4#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar5",
+                            title: "明星照片5",
+                            template:"<img src='#=starPicAvatar5#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar6",
+                            title: "明星照片6",
+                            template:"<img src='#=starPicAvatar6#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar7",
+                            title: "明星照片7",
+                            template:"<img src='#=starPicAvatar7#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar8",
+                            title: "明星照片8",
+                            template:"<img src='#=starPicAvatar8#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar9",
+                            title: "明星照片9",
+                            template:"<img src='#=starPicAvatar9#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "starPicAvatar10",
+                            title: "明星照片10",
+                            template:"<img src='#=starPicAvatar10#' width=50 height=50/>",
+                            hidden:true
+                        },
+                        {
+                            field: "faceId",
+                            title: "faceId",
+                            hidden:true
+                        },
+                        {
+                            field: "isDefaultStar",
+                            title: "默认明星脸",
+                            values:window.is_on_off
+                        },
+                        {
+                            field: "isShow",
+                            title: "是否启用",
+                            values:window.is_on_off
+                        },
+                        {
+                            field: "starRoleId",
+                            title: "角色Id",
+                            hidden:true
+                        },
+                        /*{
+                            field: "code1",
+                            title: "备用",
+                            hidden:true
+                        },
+                        {
+                            field: "code2",
+                            title: "备用",
+                            hidden:true
+                        },
+
+                            field: "code3",
+                            title: "备用",
+                            hidden:true
+                        },
+
+                            field: "code4",
+                            title: "备用",
+                            hidden:true
+                        },
+
+                            field: "code5",
+                            title: "备用",
+                            hidden:true
+                        },*/
+                        {
+                            field: "UpdateTime",
+                            title: "更新日期",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}",
+                            hidden:true
+                        },
+                        {
+                            field: "WriteTime",
+                            title: "写入日期",
+                            format: "{0: yyyy-MM-dd HH:mm:ss}"
+                        },
+                        { command: window.commandAry, title: "&nbsp;", width: "160px" }],
+                    editable: {
+                        confirmation:'确定删除吗？',
+                        mode:"popup",
+                        //template: kendo.template($("#popup_editor").html()),
+                        window : {
+                                title: "添加/修改",
+                                width:600
+                            }
+                        },
+                    edit:function(e){
+                            window.fixSelect()
+                            window.putUploadToQiNiu('starPic1')
+                            window.putUploadToQiNiu('starPic2')
+                            window.putUploadToQiNiu('starPic3')
+                            window.putUploadToQiNiu('starPic4')
+                            window.putUploadToQiNiu('starPic5')
+                            window.putUploadToQiNiu('starPic6')
+                            window.putUploadToQiNiu('starPic7')
+                            window.putUploadToQiNiu('starPic8')
+                            window.putUploadToQiNiu('starPic9')
+                            window.putUploadToQiNiu('starPic10')
+
+                            window.putUploadToQiNiu('meAvatar')
+                            window.putUploadToQiNiu('starFaceAvatar')
+
+                            window.putUploadToQiNiu('starPicAvatar1')
+                            window.putUploadToQiNiu('starPicAvatar2')
+                            window.putUploadToQiNiu('starPicAvatar3')
+                            window.putUploadToQiNiu('starPicAvatar4')
+                            window.putUploadToQiNiu('starPicAvatar5')
+
+                            window.putUploadToQiNiu('starPicAvatar6')
+                            window.putUploadToQiNiu('starPicAvatar7')
+                            window.putUploadToQiNiu('starPicAvatar8')
+                            window.putUploadToQiNiu('starPicAvatar9')
+                            window.putUploadToQiNiu('starPicAvatar10')
+
+                            setTimeout(function(){
+                                var faceid = $('input[name="faceId"]').val()
+                                if(!faceid){
+                                    $('input[name="faceId"]').val(Date.now()).change()
+                                }
+                            },100)
+
+                    },
+                   filterable:window.filter_obj
+                });
+
+
+            $('.k-grid-syncall').click(function(){
+                    syncAll();
+            })
+      });
+
+</script>
+
+
+
+
+
+
+
+
+{% include 'manager/inc/foot.html' %}
