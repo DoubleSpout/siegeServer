@@ -17,7 +17,7 @@ def restartGunicorn(isKill):
     if isKill:
         subprocess.call(['pkill -9 gunicorn'], shell=True)
         subprocess.call(['gunicorn -c gun.conf runserver:app'], shell=True, cwd=cwdPath)
-        subprocess.call(['gunicorn -c gun_manager.conf runserver_manager:app'], shell=True, cwd=cwdPath)
+        #subprocess.call(['gunicorn -c gun_manager.conf runserver_manager:app'], shell=True, cwd=cwdPath)
         print('kill all and restart all')
     #不kill平滑重启
     else:
