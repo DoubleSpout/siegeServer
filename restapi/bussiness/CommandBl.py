@@ -161,7 +161,7 @@ class CommandBl(object):
         if platform.system() == 'Windows':
             return cmd
         else:
-            cmd = 'nohup {0} > {1} 2>&1 &'.format(cmd, stdOutPath)
+            cmd = 'sudo nohup {0} > {1} 2>&1 &'.format(cmd, stdOutPath)
             print cmd
             return cmd
 
