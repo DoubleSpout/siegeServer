@@ -45,7 +45,7 @@ class Config(object):
     ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','jmx'])
     USER_INIT_PASSWORD = '123456'
 
-    JMETER_START_CMD = u'jmeter.sh'
+    JMETER_START_CMD = u'/usr/local/apache-jmeter/bin/jmeter.sh'
 
 
     #windows下和非win下分别解压到不同目录
