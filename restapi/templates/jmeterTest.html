@@ -33,6 +33,7 @@
 
     <button id="send">发送</button>
 </div><br/><br/>
+<a id="stdout_link" href="" target="_blank">stdout地址</a>
 <a id="jtl_link" href="" target="_blank">jtl报告地址</a>
 <a id="csv_link" href="" target="_blank">csv报告地址</a>
 <br/><br/>
@@ -75,8 +76,10 @@
                     window.sid = d.result
                     var jtlStr = '/static/jmeter/'+window.sid+'_0.jtl'
                     var csvStr = '/static/jmeter/'+window.sid+'_0.csv'
+                    var stdoutStr = '/static/output/'+window.sid+'_0.txt'
                     $('#jtl_link').attr('href',jtlStr)
                     $('#csv_link').attr('href',csvStr)
+                    $('#stdout_link').attr('href',csvStr)
                     return alert('执行成功')
                 }
                 else return alert(d.result)

@@ -136,7 +136,7 @@ class CommandBl(object):
                 'i':i,                   #记录当前数组位置
                 'host': item.get('host'),#记录目标host地址
                 'cmd':item.get('cmd', ''),#执行的命令
-                'stdout':os.path.join(outputPath, '{0}_{1}_stdout.txt'.format(self.sessionId, i)),#stdout文件存放url地址
+                'stdout':os.path.join(outputPath, '{0}_{1}.txt'.format(self.sessionId, i)),#stdout文件存放url地址
                 'param':item.get('param', {}),#命令执行参数
                 'type':item.get('type', ''),#类型，目前仅支持jmete
             }
